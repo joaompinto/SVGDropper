@@ -3,7 +3,6 @@ import 'dart:html';
 class Test {
   ImageElement toolbar_selected_element = null;
   CanvasElement canvas;
-  var loaded_image_toolbar = false;
   num mouseX = null, mouseY = null;
 
   void main() {
@@ -11,12 +10,8 @@ class Test {
     canvas.onClick.listen(canvas_OnClick);
 
     for (var toolbutton in queryAll('.toolbutton')) {
-      toolbutton.onClick.listen(toolbar_button_OnClick);
+      toolbutton.onClick.listen((e) => toolbar_selected_element = query("#${e.target.id}"));
     }
-  }
-
-  void toolbar_button_OnClick(MouseEvent event) {
-    toolbar_selected_element = query("#${event.target.id}");
   }
 
   void canvas_OnClick(MouseEvent event) {
@@ -24,7 +19,6 @@ class Test {
     var clientBoundingRect = canvas.getBoundingClientRect();
     mouseX = event.clientX - clientBoundingRect.left;
     mouseY = event.clientY - clientBoundingRect.top;
-    print("$mouseX,$mouseX");
     window.requestAnimationFrame(draw);
   }
 
