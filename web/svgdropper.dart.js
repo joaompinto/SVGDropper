@@ -16,6 +16,8 @@ var $$ = {};
 $$.Test = {"": "Object;toolbar_selected_element?,canvas,mouseX,mouseY",
   main$0: function() {
     this.canvas = document.querySelector("#canvas");
+    $.set$width$x(this.canvas, 1200);
+    $.set$height$x(this.canvas, 800);
     $.get$onClick$x(this.canvas).listen$1(this.get$canvas_OnClick());
     for (var t1 = $.queryAll$1$x(document, ".toolbutton"), t1 = t1.get$iterator(t1); t1.moveNext$0();)
       $.get$onClick$x(t1.get$current()).listen$1(new $.Test_main_anon(this));
@@ -33,14 +35,18 @@ $$.Test = {"": "Object;toolbar_selected_element?,canvas,mouseX,mouseY",
     return new $.BoundClosure$1(this, "canvas_OnClick$1");
   },
   draw$1: function(_) {
-    var context, t1, t2;
+    var context, placeX, placeY, t1, t2;
     context = $.get$context2d$x(this.canvas);
+    placeX = $.$sub$n(this.mouseX, $.$div$n($.get$width$x(this.toolbar_selected_element), 2));
+    placeY = $.$sub$n(this.mouseY, $.$div$n($.get$height$x(this.toolbar_selected_element), 2));
     t1 = this.canvas;
     t2 = $.getInterceptor$x(t1);
     context.clearRect(0, 0, t2.get$width(t1), t2.get$height(t1));
     t1 = this.toolbar_selected_element;
-    if (t1 != null && this.mouseX != null && this.mouseY != null)
-      context.drawImage(t1, this.mouseX, this.mouseY);
+    if (t1 != null && this.mouseX != null && this.mouseY != null) {
+      t2 = $.getInterceptor$x(t1);
+      context.drawImage(t1, placeX, placeY, t2.get$width(t1), t2.get$height(t1));
+    }
   },
   get$draw: function() {
     return new $.BoundClosure$1(this, "draw$1");
@@ -1609,6 +1615,9 @@ $$.JSNumber = {"": "Interceptor;",
     if (!(typeof other === "number"))
       throw $.wrapException($.ArgumentError$(other));
     return receiver - other;
+  },
+  $div: function(receiver, other) {
+    return receiver / other;
   },
   $tdiv: function(receiver, other) {
     return this.truncate$0(receiver / other);
@@ -3551,7 +3560,7 @@ $$.ButtonElement = {"": "Element;"};
 
 $$.CDataSection = {"": "Text;"};
 
-$$.CanvasElement = {"": "Element;height=,width=",
+$$.CanvasElement = {"": "Element;height%,width%",
   get$context2D: function(receiver) {
     return receiver.getContext("2d");
   },
@@ -3629,7 +3638,7 @@ $$.Element = {"": "Node;id=",
   }
 };
 
-$$.EmbedElement = {"": "Element;height=,width="};
+$$.EmbedElement = {"": "Element;height%,width%"};
 
 $$.EntityReference = {"": "Node;"};
 
@@ -3690,11 +3699,11 @@ $$.HttpRequestException = {"": "Interceptor;",
 
 $$.HttpRequestProgressEvent = {"": "ProgressEvent;"};
 
-$$.IFrameElement = {"": "Element;height=,width="};
+$$.IFrameElement = {"": "Element;height%,width%"};
 
-$$.ImageElement = {"": "Element;height=,width=,x=,y="};
+$$.ImageElement = {"": "Element;height%,width%,x=,y="};
 
-$$.InputElement = {"": "Element;height=,width="};
+$$.InputElement = {"": "Element;height%,width%"};
 
 $$.KeyboardEvent = {"": "UIEvent;"};
 
@@ -3849,7 +3858,7 @@ $$.Notation = {"": "Node;"};
 
 $$.OListElement = {"": "Element;"};
 
-$$.ObjectElement = {"": "Element;height=,width="};
+$$.ObjectElement = {"": "Element;height%,width%"};
 
 $$.OptGroupElement = {"": "Element;"};
 
@@ -4104,7 +4113,7 @@ $$.Uint8ClampedArray = {"": "Uint8Array;",
 
 $$.UnknownElement = {"": "Element;"};
 
-$$.VideoElement = {"": "MediaElement;height=,width="};
+$$.VideoElement = {"": "MediaElement;height%,width%"};
 
 $$.WheelEvent = {"": "MouseEvent;"};
 
@@ -5831,6 +5840,11 @@ $.$and$n = function(receiver, a0) {
     return (receiver & a0) >>> 0;
   return $.getInterceptor$n(receiver).$and(receiver, a0);
 };
+$.$div$n = function(receiver, a0) {
+  if (typeof receiver == "number" && typeof a0 == "number")
+    return receiver / a0;
+  return $.getInterceptor$n(receiver).$div(receiver, a0);
+};
 $.$eq = function(receiver, a0) {
   if (receiver == null)
     return a0 == null;
@@ -5890,6 +5904,9 @@ $.get$context2d$x = function(receiver) {
 $.get$hashCode$ = function(receiver) {
   return $.getInterceptor(receiver).get$hashCode(receiver);
 };
+$.get$height$x = function(receiver) {
+  return $.getInterceptor$x(receiver).get$height(receiver);
+};
 $.get$id$x = function(receiver) {
   return $.getInterceptor$x(receiver).get$id(receiver);
 };
@@ -5908,6 +5925,9 @@ $.get$onClick$x = function(receiver) {
 $.get$target$x = function(receiver) {
   return $.getInterceptor$x(receiver).get$target(receiver);
 };
+$.get$width$x = function(receiver) {
+  return $.getInterceptor$x(receiver).get$width(receiver);
+};
 $.postMessage$1$x = function(receiver, a0) {
   return $.getInterceptor$x(receiver).postMessage$1(receiver, a0);
 };
@@ -5920,8 +5940,14 @@ $.register$2$x = function(receiver, a0, a1) {
 $.requestAnimationFrame$1$x = function(receiver, a0) {
   return $.getInterceptor$x(receiver).requestAnimationFrame$1(receiver, a0);
 };
+$.set$height$x = function(receiver, value) {
+  return $.getInterceptor$x(receiver).set$height(receiver, value);
+};
 $.set$length$asx = function(receiver, value) {
   return $.getInterceptor$asx(receiver).set$length(receiver, value);
+};
+$.set$width$x = function(receiver, value) {
+  return $.getInterceptor$x(receiver).set$width(receiver, value);
 };
 $.skip$1$ax = function(receiver, a0) {
   return $.getInterceptor$ax(receiver).skip$1(receiver, a0);
