@@ -7,6 +7,8 @@ class Test {
 
   void main() {
     canvas = query("#canvas");
+    canvas.width = 1200;
+    canvas.height = 800;
     canvas.onClick.listen(canvas_OnClick);
 
     for (var toolbutton in queryAll('.toolbutton')) {
@@ -24,9 +26,11 @@ class Test {
 
   void draw(num _) {
     CanvasRenderingContext2D context = canvas.context2d;
+    num placeX = mouseX - toolbar_selected_element.width/2;
+    num placeY = mouseY - toolbar_selected_element.height/2;
     context.clearRect(0, 0, canvas.width, canvas.height);
     if(toolbar_selected_element!= null   && mouseX != null && mouseY != null) {
-      context.drawImage(toolbar_selected_element, mouseX, mouseY);
+      context.drawImageScaled(toolbar_selected_element, placeX, placeY, toolbar_selected_element.width, toolbar_selected_element.height);
     }
   }
 }
