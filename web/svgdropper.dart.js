@@ -13,39 +13,83 @@ var $ = Isolate.$isolateProperties;
 var $$ = {};
 
 // Classes
-$$.Test = {"": "Object;toolbar_selected_element?,canvas,mouseX,mouseY",
+$$.PlacedImage = {"": "Object;img<,x>,y>"};
+
+$$.SVGDropper = {"": "Object;active_toolbutton,prev_active_toolbutton,canvas,mouseX,mouseY,canvasBoundingRect,placed_images",
   main$0: function() {
+    var t1, t2;
     this.canvas = document.querySelector("#canvas");
-    $.set$width$x(this.canvas, 1200);
-    $.set$height$x(this.canvas, 800);
+    t1 = this.canvas;
+    t2 = $.split$1$s($.get$width$x($.getComputedStyle$0$x(t1)), "px");
+    if (0 >= t2.length)
+      throw $.ioore(0);
+    $.set$width$x(t1, $.Primitives_parseInt(t2[0], null, null));
+    t2 = this.canvas;
+    t1 = $.split$1$s($.get$height$x($.getComputedStyle$0$x(t2)), "px");
+    if (0 >= t1.length)
+      throw $.ioore(0);
+    $.set$height$x(t2, $.Primitives_parseInt(t1[0], null, null));
+    this.canvasBoundingRect = this.canvas.getBoundingClientRect();
+    for (t1 = $.queryAll$1$x(document, ".toolbutton"), t1 = t1.get$iterator(t1); t1.moveNext$0();)
+      $.get$onClick$x(t1.get$current()).listen$1(this.get$toolbutton_OnClick());
     $.get$onClick$x(this.canvas).listen$1(this.get$canvas_OnClick());
-    for (var t1 = $.queryAll$1$x(document, ".toolbutton"), t1 = t1.get$iterator(t1); t1.moveNext$0();)
-      $.get$onClick$x(t1.get$current()).listen$1(new $.Test_main_anon(this));
+    $.get$onMouseMove$x(this.canvas).listen$1(this.get$canvas_OnMouseMove());
+    $.get$onMouseOut$x(this.canvas).listen$1(this.get$canvas_OnMouseOut());
+  },
+  toolbutton_OnClick$1: function($event) {
+    var t1 = "#" + $.S($.get$id$x($.get$target$x($event)));
+    this.active_toolbutton = document.querySelector(t1).cloneNode(false);
+    $.set$width$x(this.active_toolbutton, 100);
+    $.set$height$x(this.active_toolbutton, 100);
+  },
+  get$toolbutton_OnClick: function() {
+    return new $.BoundClosure$1(this, "toolbutton_OnClick$1");
+  },
+  canvas_OnMouseMove$1: function($event) {
+    var t1 = $.getInterceptor$x($event);
+    this.mouseX = $.$sub$n(t1.get$clientX($event), $.get$left$x(this.canvasBoundingRect));
+    this.mouseY = $.$sub$n(t1.get$clientY($event), $.get$top$x(this.canvasBoundingRect));
+    $.requestAnimationFrame$1$x(window, this.get$draw());
+  },
+  get$canvas_OnMouseMove: function() {
+    return new $.BoundClosure$1(this, "canvas_OnMouseMove$1");
+  },
+  canvas_OnMouseOut$1: function($event) {
+    this.active_toolbutton = null;
+    $.requestAnimationFrame$1$x(window, this.get$draw());
+  },
+  get$canvas_OnMouseOut: function() {
+    return new $.BoundClosure$1(this, "canvas_OnMouseOut$1");
   },
   canvas_OnClick$1: function($event) {
-    var clientBoundingRect, t1, t2;
-    clientBoundingRect = this.canvas.getBoundingClientRect();
-    t1 = $.getInterceptor$x($event);
-    t2 = $.getInterceptor$x(clientBoundingRect);
-    this.mouseX = $.$sub$n(t1.get$clientX($event), t2.get$left(clientBoundingRect));
-    this.mouseY = $.$sub$n(t1.get$clientY($event), t2.get$top(clientBoundingRect));
-    $.requestAnimationFrame$1$x(window, this.get$draw());
+    var t1, placeX, placeY;
+    if (this.active_toolbutton == null)
+      this.active_toolbutton = this.prev_active_toolbutton;
+    t1 = this.active_toolbutton;
+    if (t1 != null) {
+      placeX = $.$sub$n(this.mouseX, $.$div$n($.get$width$x(t1), 2));
+      placeY = $.$sub$n(this.mouseY, $.$div$n($.get$height$x(this.active_toolbutton), 2));
+      this.placed_images.push($.PlacedImage$(this.active_toolbutton, placeX, placeY));
+      this.prev_active_toolbutton = this.active_toolbutton;
+      $.requestAnimationFrame$1$x(window, this.get$draw());
+    }
   },
   get$canvas_OnClick: function() {
     return new $.BoundClosure$1(this, "canvas_OnClick$1");
   },
   draw$1: function(_) {
-    var context, placeX, placeY, t1, t2;
+    var context, t1, placeX, placeY;
     context = $.get$context2d$x(this.canvas);
-    placeX = $.$sub$n(this.mouseX, $.$div$n($.get$width$x(this.toolbar_selected_element), 2));
-    placeY = $.$sub$n(this.mouseY, $.$div$n($.get$height$x(this.toolbar_selected_element), 2));
-    t1 = this.canvas;
-    t2 = $.getInterceptor$x(t1);
-    context.clearRect(0, 0, t2.get$width(t1), t2.get$height(t1));
-    t1 = this.toolbar_selected_element;
-    if (t1 != null && this.mouseX != null && this.mouseY != null) {
-      t2 = $.getInterceptor$x(t1);
-      context.drawImage(t1, placeX, placeY, t2.get$width(t1), t2.get$height(t1));
+    context.clearRect(0, 0, $.get$width$x(this.canvas), $.get$height$x(this.canvas));
+    $.JSArray_methods.forEach$1(this.placed_images, new $.SVGDropper_draw_anon(context));
+    t1 = this.active_toolbutton;
+    if (t1 != null) {
+      placeX = $.$sub$n(this.mouseX, $.$div$n($.get$width$x(t1), 2));
+      placeY = $.$sub$n(this.mouseY, $.$div$n($.get$height$x(this.active_toolbutton), 2));
+      if (this.mouseX != null && this.mouseY != null) {
+        t1 = this.active_toolbutton;
+        context.drawImage(t1, placeX, placeY, $.get$width$x(t1), $.get$height$x(this.active_toolbutton));
+      }
     }
   },
   get$draw: function() {
@@ -53,14 +97,13 @@ $$.Test = {"": "Object;toolbar_selected_element?,canvas,mouseX,mouseY",
   }
 };
 
-$$.Test_main_anon = {"": "Closure;this_0",
+$$.SVGDropper_draw_anon = {"": "Closure;context_0",
   call$1: function(e) {
-    var t1, t2;
-    t1 = this.this_0;
-    t2 = "#" + $.S($.get$id$x($.get$target$x(e)));
-    t2 = document.querySelector(t2);
-    t1.set$toolbar_selected_element(t2);
-    return t2;
+    var t1, t2, t3;
+    t1 = this.context_0;
+    t2 = e.get$img();
+    t3 = $.getInterceptor$x(e);
+    return t1.drawImage(t2, t3.get$x(e), t3.get$y(e), $.get$width$x(t2), $.get$height$x(e.get$img()));
   }
 };
 
@@ -1683,6 +1726,9 @@ $$.JSString = {"": "Interceptor;",
   replaceAll$2: function(receiver, from, to) {
     return $.stringReplaceAllUnchecked(receiver, from, to);
   },
+  split$1: function(receiver, pattern) {
+    return receiver.split(pattern);
+  },
   substring$2: function(receiver, startIndex, endIndex) {
     if (endIndex == null)
       endIndex = receiver.length;
@@ -1698,6 +1744,9 @@ $$.JSString = {"": "Interceptor;",
   },
   substring$1: function($receiver, startIndex) {
     return this.substring$2($receiver, startIndex, null);
+  },
+  toLowerCase$0: function(receiver) {
+    return receiver.toLowerCase();
   },
   get$isEmpty: function(receiver) {
     return receiver.length === 0;
@@ -2224,8 +2273,8 @@ $$._ForwardingStream = {"": "Stream;",
 };
 
 $$._BaseStreamSubscription = {"": "Object;",
-  _liblib1$_onData$1: function(arg0) {
-    return this._liblib1$_onData.call$1(arg0);
+  _onData$1: function(arg0) {
+    return this._onData.call$1(arg0);
   },
   _onError$1: function(arg0) {
     return this._onError.call$1(arg0);
@@ -2241,7 +2290,7 @@ $$._BaseStreamSubscription = {"": "Object;",
   }
 };
 
-$$._ForwardingStreamSubscription = {"": "_BaseStreamSubscription;_stream,_cancelOnError,_subscription,_liblib1$_onData,_onError,_onDone",
+$$._ForwardingStreamSubscription = {"": "_BaseStreamSubscription;_stream,_cancelOnError,_subscription,_onData,_onError,_onDone",
   cancel$0: function() {
     var t1 = this._subscription;
     if (t1 != null) {
@@ -2250,7 +2299,7 @@ $$._ForwardingStreamSubscription = {"": "_BaseStreamSubscription;_stream,_cancel
     }
   },
   _sendData$1: function(data) {
-    this._liblib1$_onData$1(data);
+    this._onData$1(data);
   },
   _sendError$1: function(error) {
     this._onError$1(error);
@@ -3273,6 +3322,13 @@ $$._ExceptionImplementation = {"": "Object;message",
   $isException: true
 };
 
+$$.FormatException = {"": "Object;message",
+  toString$0: function(_) {
+    return "FormatException: " + $.S(this.message);
+  },
+  $isException: true
+};
+
 $$.Expando = {"": "Object;name",
   toString$0: function(_) {
     return "Expando:" + this.name;
@@ -3427,15 +3483,15 @@ $$._EventStream = {"": "Stream;_target,_eventType,_useCapture",
   }
 };
 
-$$._EventStreamSubscription = {"": "StreamSubscription;_pauseCount,_target,_eventType,_onData,_useCapture",
+$$._EventStreamSubscription = {"": "StreamSubscription;_pauseCount,_target,_eventType,_liblib1$_onData,_useCapture",
   cancel$0: function() {
     if (this.get$_canceled())
       return;
-    var t1 = this._onData;
+    var t1 = this._liblib1$_onData;
     if (t1 != null)
       $.$$dom_removeEventListener$3$x(this._target, this._eventType, t1, this._useCapture);
     this._target = null;
-    this._onData = null;
+    this._liblib1$_onData = null;
   },
   get$_canceled: function() {
     return this._target == null;
@@ -3444,8 +3500,8 @@ $$._EventStreamSubscription = {"": "StreamSubscription;_pauseCount,_target,_even
     return this._pauseCount > 0;
   },
   _tryResume$0: function() {
-    if (this._onData != null && !this.get$_paused())
-      $.$$dom_addEventListener$3$x(this._target, this._eventType, this._onData, this._useCapture);
+    if (this._liblib1$_onData != null && !this.get$_paused())
+      $.$$dom_addEventListener$3$x(this._target, this._eventType, this._liblib1$_onData, this._useCapture);
   },
   _EventStreamSubscription$4: function(_target, _eventType, _onData, _useCapture) {
     this._tryResume$0();
@@ -3585,6 +3641,36 @@ $$.ContentElement = {"": "Element;"};
 
 $$.CssFontFaceLoadEvent = {"": "Event;"};
 
+$$.CssStyleDeclaration = {"": "Interceptor;length=",
+  getPropertyValue$1: function(receiver, propertyName) {
+    var propValue = receiver.getPropertyValue(propertyName);
+    return propValue != null ? propValue : "";
+  },
+  setProperty$3: function(receiver, propertyName, value, priority) {
+    var exception;
+    try {
+      receiver.setProperty(propertyName, value, priority);
+      if (!!receiver.setAttribute)
+        receiver.setAttribute(propertyName, value);
+    } catch (exception) {
+      $.unwrapException(exception);
+    }
+
+  },
+  get$height: function(receiver) {
+    return this.getPropertyValue$1(receiver, "height");
+  },
+  set$height: function(receiver, value) {
+    this.setProperty$3(receiver, "height", value, "");
+  },
+  get$width: function(receiver) {
+    return this.getPropertyValue$1(receiver, "width");
+  },
+  set$width: function(receiver, value) {
+    this.setProperty$3(receiver, "width", value, "");
+  }
+};
+
 $$.CustomElementConstructor = {"": "Interceptor;"};
 
 $$.CustomEvent = {"": "Event;"};
@@ -3633,8 +3719,22 @@ $$.DomException = {"": "Interceptor;",
 };
 
 $$.Element = {"": "Node;id=",
+  getComputedStyle$1: function(receiver, pseudoElement) {
+    if (pseudoElement == null)
+      pseudoElement = "";
+    return window.getComputedStyle(receiver, pseudoElement);
+  },
+  getComputedStyle$0: function($receiver) {
+    return this.getComputedStyle$1($receiver, null);
+  },
   get$onClick: function(receiver) {
     return $.EventStreamProvider_click.forTarget$1(receiver);
+  },
+  get$onMouseMove: function(receiver) {
+    return $.EventStreamProvider_mousemove.forTarget$1(receiver);
+  },
+  get$onMouseOut: function(receiver) {
+    return $.EventStreamProvider_mouseout.forTarget$1(receiver);
   }
 };
 
@@ -4400,12 +4500,16 @@ $$.BoundClosure$0 = {"": "Closure;self,target",
 Isolate.$finishClasses($$, $, null);
 $$ = null;
 
-$.Test$ = function() {
-  return new $.Test(null, null, null, null);
+$.PlacedImage$ = function(img, x, y) {
+  return new $.PlacedImage(img, x, y);
+};
+
+$.SVGDropper$ = function() {
+  return new $.SVGDropper(null, null, null, null, null, null, []);
 };
 
 $.main = function() {
-  $.Test$().main$0();
+  $.SVGDropper$().main$0();
 };
 
 $.Arrays_copy = function(src, srcStart, dst, dstStart, count) {
@@ -4920,6 +5024,57 @@ $.Primitives_printString = function(string) {
     return;
   }
   throw "Unable to print message: " + String(string);
+};
+
+$.Primitives__throwFormatException = function(string) {
+  throw $.wrapException($.FormatException$(string));
+};
+
+$.Primitives_parseInt = function(source, radix, handleError) {
+  var match, t1, maxCharCode, digitsPart, i;
+  if (handleError == null)
+    handleError = $.Primitives__throwFormatException;
+  if (!(typeof source === "string"))
+    $.throwExpression($.ArgumentError$(source));
+  match = /^\s*[+-]?((0x[a-f0-9]+)|(\d+)|([a-z0-9]+))\s*$/i.exec(source);
+  if (radix == null) {
+    t1 = $.getInterceptor(match);
+    if (match != null) {
+      if (t1.$index(match, 2) != null)
+        return parseInt(source, 16);
+      if (t1.$index(match, 3) != null)
+        return parseInt(source, 10);
+      return handleError.call$1(source);
+    }
+    radix = 10;
+  } else {
+    throw $.wrapException($.ArgumentError$("Radix is not an integer"));
+    if ($.JSNull_methods.$lt(radix, 2) || $.JSNull_methods.$gt(radix, 36))
+      throw $.wrapException($.RangeError$("Radix " + $.S(radix) + " not in range 2..36"));
+    t1 = $.getInterceptor(match);
+    if (match != null) {
+      if (false)
+        return parseInt(source, 10);
+      if ($.JSNull_methods.$lt(radix, 10) || t1.$index(match, 3) == null) {
+        if ($.JSNull_methods.$le(radix, 10)) {
+          if (typeof radix !== "number")
+            throw $.iae(radix);
+          maxCharCode = 48 + radix - 1;
+        } else {
+          if (typeof radix !== "number")
+            throw $.iae(radix);
+          maxCharCode = 97 + radix - 10 - 1;
+        }
+        digitsPart = $.toLowerCase$0$s(t1.$index(match, 1));
+        for (i = 0; i < digitsPart.length; ++i)
+          if ($.JSString_methods.codeUnitAt$1(digitsPart, i) > maxCharCode)
+            return handleError.call$1(source);
+      }
+    }
+  }
+  if (match == null)
+    return handleError.call$1(source);
+  return parseInt(source, radix);
 };
 
 $.Primitives_objectTypeName = function(object) {
@@ -5586,6 +5741,10 @@ $.ArgumentError$ = function(message) {
   return new $.ArgumentError(message);
 };
 
+$.RangeError$ = function(message) {
+  return new $.RangeError(message);
+};
+
 $.RangeError$value = function(value) {
   return new $.RangeError("value " + $.S(value));
 };
@@ -5620,6 +5779,10 @@ $.RuntimeError$ = function(message) {
 
 $._ExceptionImplementation$ = function(message) {
   return new $._ExceptionImplementation(message);
+};
+
+$.FormatException$ = function(message) {
+  return new $.FormatException(message);
 };
 
 $.Expando$ = function($name) {
@@ -5767,6 +5930,8 @@ $._Isolate_port = function() {
 
 $.IsolateNatives__processWorkerMessage.call$2 = $.IsolateNatives__processWorkerMessage;
 $.IsolateNatives__processWorkerMessage.$name = "IsolateNatives__processWorkerMessage";
+$.Primitives__throwFormatException.call$1 = $.Primitives__throwFormatException;
+$.Primitives__throwFormatException.$name = "Primitives__throwFormatException";
 $.wrapException.call$1 = $.wrapException;
 $.wrapException.$name = "wrapException";
 $.DartError_toStringWrapper.call$0 = $.DartError_toStringWrapper;
@@ -5810,11 +5975,13 @@ Isolate.makeConstantList = function(list) {
 };
 $.List_empty = Isolate.makeConstantList([]);
 $.JSNull_methods = $.JSNull.prototype;
+$.EventStreamProvider_mouseout = new $.EventStreamProvider("mouseout");
 $.JSNumber_methods = $.JSNumber.prototype;
 $.JSString_methods = $.JSString.prototype;
+$.EventStreamProvider_mousemove = new $.EventStreamProvider("mousemove");
 $.C_CloseToken = new $.CloseToken();
-$.EventStreamProvider_click = new $.EventStreamProvider("click");
 $.Duration_0 = new $.Duration(0);
+$.EventStreamProvider_click = new $.EventStreamProvider("click");
 $.Expando__keyCount = 0;
 $.dispatchPropertyName = "_zzyzx";
 $.lazyPort = null;
@@ -5916,17 +6083,32 @@ $.get$isEmpty$asx = function(receiver) {
 $.get$iterator$ax = function(receiver) {
   return $.getInterceptor$ax(receiver).get$iterator(receiver);
 };
+$.get$left$x = function(receiver) {
+  return $.getInterceptor$x(receiver).get$left(receiver);
+};
 $.get$length$asx = function(receiver) {
   return $.getInterceptor$asx(receiver).get$length(receiver);
 };
 $.get$onClick$x = function(receiver) {
   return $.getInterceptor$x(receiver).get$onClick(receiver);
 };
+$.get$onMouseMove$x = function(receiver) {
+  return $.getInterceptor$x(receiver).get$onMouseMove(receiver);
+};
+$.get$onMouseOut$x = function(receiver) {
+  return $.getInterceptor$x(receiver).get$onMouseOut(receiver);
+};
 $.get$target$x = function(receiver) {
   return $.getInterceptor$x(receiver).get$target(receiver);
 };
+$.get$top$x = function(receiver) {
+  return $.getInterceptor$x(receiver).get$top(receiver);
+};
 $.get$width$x = function(receiver) {
   return $.getInterceptor$x(receiver).get$width(receiver);
+};
+$.getComputedStyle$0$x = function(receiver) {
+  return $.getInterceptor$x(receiver).getComputedStyle$0(receiver);
 };
 $.postMessage$1$x = function(receiver, a0) {
   return $.getInterceptor$x(receiver).postMessage$1(receiver, a0);
@@ -5952,6 +6134,9 @@ $.set$width$x = function(receiver, value) {
 $.skip$1$ax = function(receiver, a0) {
   return $.getInterceptor$ax(receiver).skip$1(receiver, a0);
 };
+$.split$1$s = function(receiver, a0) {
+  return $.getInterceptor$s(receiver).split$1(receiver, a0);
+};
 $.sublist$1$ax = function(receiver, a0) {
   return $.getInterceptor$ax(receiver).sublist$1(receiver, a0);
 };
@@ -5960,6 +6145,9 @@ $.sublist$2$ax = function(receiver, a0, a1) {
 };
 $.toList$1$growable$ax = function(receiver, a0) {
   return $.getInterceptor$ax(receiver).toList$1$growable(receiver, a0);
+};
+$.toLowerCase$0$s = function(receiver) {
+  return $.getInterceptor$s(receiver).toLowerCase$0(receiver);
 };
 $.toString$0 = function(receiver) {
   return $.getInterceptor(receiver).toString$0(receiver);
@@ -6152,6 +6340,8 @@ $.defineNativeMethods("CompositionEvent", $.CompositionEvent);
 $.defineNativeMethods("HTMLContentElement", $.ContentElement);
 
 $.defineNativeMethods("CSSFontFaceLoadEvent", $.CssFontFaceLoadEvent);
+
+$.defineNativeMethods("CSSStyleDeclaration", $.CssStyleDeclaration);
 
 $.defineNativeMethods("CustomElementConstructor", $.CustomElementConstructor);
 
@@ -6561,8 +6751,8 @@ $.defineNativeMethods("SQLError", $.SqlError);
 
 $.defineNativeMethods("SQLException", $.SqlException);
 
-// 228 dynamic classes.
-// 253 classes
+// 229 dynamic classes.
+// 254 classes
 // 23 !leaf
 (function() {
   var v0_Uint8Array = "Uint8Array|Uint8ClampedArray", v1_Text = "CDATASection|Text", v2_TextPositioningElement = "SVGAltGlyphElement|SVGTRefElement|SVGTSpanElement|SVGTextElement|SVGTextPositioningElement", v3_TextContentElement = [v2_TextPositioningElement, "SVGTextContentElement|SVGTextPathElement"].join("|"), v4__GradientElement = "SVGGradientElement|SVGLinearGradientElement|SVGRadialGradientElement", v5_StyledElement = [v3_TextContentElement, v4__GradientElement, "SVGAElement|SVGCircleElement|SVGClipPathElement|SVGDefsElement|SVGDescElement|SVGEllipseElement|SVGFEBlendElement|SVGFEColorMatrixElement|SVGFEComponentTransferElement|SVGFECompositeElement|SVGFEConvolveMatrixElement|SVGFEDiffuseLightingElement|SVGFEDisplacementMapElement|SVGFEDropShadowElement|SVGFEFloodElement|SVGFEGaussianBlurElement|SVGFEImageElement|SVGFEMergeElement|SVGFEMorphologyElement|SVGFEOffsetElement|SVGFESpecularLightingElement|SVGFETileElement|SVGFETurbulenceElement|SVGFilterElement|SVGForeignObjectElement|SVGGElement|SVGGlyphRefElement|SVGImageElement|SVGLineElement|SVGMarkerElement|SVGMaskElement|SVGMissingGlyphElement|SVGPathElement|SVGPatternElement|SVGPolygonElement|SVGPolylineElement|SVGRectElement|SVGSVGElement|SVGStopElement|SVGStyledElement|SVGSwitchElement|SVGSymbolElement|SVGTitleElement|SVGUseElement"].join("|"), v6_AnimationElement = "SVGAnimateColorElement|SVGAnimateElement|SVGAnimateMotionElement|SVGAnimateTransformElement|SVGAnimationElement|SVGSetElement", v7__SVGComponentTransferFunctionElement = "SVGComponentTransferFunctionElement|SVGFEFuncAElement|SVGFEFuncBElement|SVGFEFuncGElement|SVGFEFuncRElement", v8_MediaElement = "HTMLAudioElement|HTMLMediaElement|HTMLVideoElement", v9_SvgElement = [v5_StyledElement, v6_AnimationElement, v7__SVGComponentTransferFunctionElement, "SVGAltGlyphDefElement|SVGAltGlyphItemElement|SVGCursorElement|SVGElement|SVGFEDistantLightElement|SVGFEMergeNodeElement|SVGFEPointLightElement|SVGFESpotLightElement|SVGFontElement|SVGFontFaceElement|SVGFontFaceFormatElement|SVGFontFaceNameElement|SVGFontFaceSrcElement|SVGFontFaceUriElement|SVGGlyphElement|SVGHKernElement|SVGMPathElement|SVGMetadataElement|SVGScriptElement|SVGStyleElement|SVGVKernElement|SVGViewElement"].join("|"), v10_MouseEvent = "MouseEvent|WheelEvent", v11_ProgressEvent = "ProgressEvent|XMLHttpRequestProgressEvent", v12_UIEvent = [v10_MouseEvent, "CompositionEvent|FocusEvent|KeyboardEvent|SVGZoomEvent|TextEvent|TouchEvent|UIEvent"].join("|"), v13_Element = [v8_MediaElement, v9_SvgElement, "Element|HTMLAnchorElement|HTMLAppletElement|HTMLAreaElement|HTMLBRElement|HTMLBaseElement|HTMLBaseFontElement|HTMLBodyElement|HTMLButtonElement|HTMLCanvasElement|HTMLContentElement|HTMLDListElement|HTMLDataListElement|HTMLDetailsElement|HTMLDialogElement|HTMLDirectoryElement|HTMLDivElement|HTMLElement|HTMLEmbedElement|HTMLFieldSetElement|HTMLFontElement|HTMLFormElement|HTMLFrameElement|HTMLFrameSetElement|HTMLHRElement|HTMLHeadElement|HTMLHeadingElement|HTMLHtmlElement|HTMLIFrameElement|HTMLImageElement|HTMLInputElement|HTMLKeygenElement|HTMLLIElement|HTMLLabelElement|HTMLLegendElement|HTMLLinkElement|HTMLMapElement|HTMLMarqueeElement|HTMLMenuElement|HTMLMetaElement|HTMLMeterElement|HTMLModElement|HTMLOListElement|HTMLObjectElement|HTMLOptGroupElement|HTMLOptionElement|HTMLOutputElement|HTMLParagraphElement|HTMLParamElement|HTMLPreElement|HTMLProgressElement|HTMLQuoteElement|HTMLScriptElement|HTMLSelectElement|HTMLShadowElement|HTMLSourceElement|HTMLSpanElement|HTMLStyleElement|HTMLTableCaptionElement|HTMLTableCellElement|HTMLTableColElement|HTMLTableElement|HTMLTableRowElement|HTMLTableSectionElement|HTMLTemplateElement|HTMLTextAreaElement|HTMLTitleElement|HTMLTrackElement|HTMLUListElement|HTMLUnknownElement"].join("|"), v14_DocumentFragment = "DocumentFragment|ShadowRoot", v15_CharacterData = [v1_Text, "CharacterData|Comment"].join("|"), v16_Document = "Document|HTMLDocument|SVGDocument", v17_Node = [v13_Element, v14_DocumentFragment, v15_CharacterData, v16_Document, "Attr|DocumentType|EntityReference|Node|Notation|ProcessingInstruction"].join("|");
