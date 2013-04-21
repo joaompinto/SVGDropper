@@ -25,10 +25,9 @@ class SVGDropper {
     // Cache it to make sure we don't trigger a reflow
     canvasBoundingRect = canvas.getBoundingClientRect();
 
-    for (var toolbutton in queryAll('.toolbutton')) {
-      toolbutton.onClick.listen(toolbutton_OnClick);
+     queryAll('.toolbutton').forEach((button) =>
+        button.onClick.listen(toolbutton_OnClick));
 
-    }
     canvas.onClick.listen(canvas_OnClick);
     canvas.onMouseMove.listen(canvas_OnMouseMove);
     canvas.onMouseOut.listen(canvas_OnMouseOut);
