@@ -1,14 +1,15 @@
 import 'dart:html';
+import 'package:js/js.dart' as js;
 
 class PlacedImage {
-  ImageElement img;
+  CanvasElement img;
   num x, y;
   PlacedImage(this.img, this.x, this.y);
 }
 
 class SVGDropper {
-  ImageElement active_toolbutton = null;
-  ImageElement prev_active_toolbutton = null; // previous toolbutton
+  var active_toolbutton = null;
+  var prev_active_toolbutton = null; // previous toolbutton
   CanvasElement canvas;
   num mouseX = null, mouseY = null;
   Rect canvasBoundingRect = null;
@@ -34,17 +35,22 @@ class SVGDropper {
   }
 
   void toolbutton_OnClick(MouseEvent event) {
-    // We clone the elements because we want to store it and we may need to
-    // resize the clone
-    active_toolbutton = query("#${event.target.id}").clone(false);
-
+    //active_toolbutton = query("#${event.target.id}").clone(true);
+    //print('${event.target.href}');
+    active_toolbutton = new CanvasElement();
     active_toolbutton.width = 100;
     active_toolbutton.height = 100;
+    var options = js.map({ 'ignoreMouse:': true,
+      'ignoreAnimation': true,
+      'ignoreDimensions': true,
+      'scaleWidth': 100,
+      'scaleHeight': 100});
+    js.context.canvg(active_toolbutton, event.target.src, options);
+
+    //active_toolbutton
   }
 
   void canvas_OnMouseMove(MouseEvent event) {
-    // We clone the elements because we want to store it and we may need to
-    // resize the clone
     mouseX = event.clientX - canvasBoundingRect.left;
     mouseY = event.clientY - canvasBoundingRect.top;
     window.requestAnimationFrame(draw);
@@ -74,15 +80,14 @@ class SVGDropper {
 
     // Draw all images already placed in the board
     placed_images.forEach((e) =>
-      context.drawImageScaled(e.img, e.x, e.y,
-          e.img.width, e.img.height)
+      context.drawImage(e.img, e.x, e.y)
     );
+
     if(active_toolbutton != null) {
       final placeX = mouseX - active_toolbutton.width/2;
       final placeY = mouseY - active_toolbutton.height/2;
       if(mouseX != null && mouseY != null) {
-        context.drawImageScaled(active_toolbutton, placeX, placeY,
-            active_toolbutton.width, active_toolbutton.height);
+        context.drawImage(active_toolbutton, placeX, placeY);
       }
     }
   }
