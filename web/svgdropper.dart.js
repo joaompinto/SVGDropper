@@ -13,6 +13,8 @@ var $ = Isolate.$isolateProperties;
 var $$ = {};
 
 // Classes
+$$.PlacedImage = {"": "Object;img<,x>,y>"};
+
 $$.SVGDropper = {"": "Object;active_toolbutton,prev_active_toolbutton,canvas,mouseX,mouseY,canvasBoundingRect,placed_images",
   main$0: function() {
     var t1, t2;
@@ -65,13 +67,14 @@ $$.SVGDropper = {"": "Object;active_toolbutton,prev_active_toolbutton,canvas,mou
     return new $.BoundClosure$1(this, "canvas_OnMouseOut$1");
   },
   canvas_OnClick$1: function($event) {
-    var t1;
+    var t1, placeX, placeY;
     if (this.active_toolbutton == null)
       this.active_toolbutton = this.prev_active_toolbutton;
     t1 = this.active_toolbutton;
     if (t1 != null) {
-      $.$sub$n(this.mouseX, $.$div$n($.get$width$x(t1), 2));
-      $.$sub$n(this.mouseY, $.$div$n($.get$height$x(this.active_toolbutton), 2));
+      placeX = $.$sub$n(this.mouseX, $.$div$n($.get$width$x(t1), 2));
+      placeY = $.$sub$n(this.mouseY, $.$div$n($.get$height$x(this.active_toolbutton), 2));
+      this.placed_images.push($.PlacedImage$(this.active_toolbutton, placeX, placeY));
       this.prev_active_toolbutton = this.active_toolbutton;
       $.requestAnimationFrame$1$x(window, this.get$draw());
     }
@@ -99,11 +102,8 @@ $$.SVGDropper = {"": "Object;active_toolbutton,prev_active_toolbutton,canvas,mou
 
 $$.SVGDropper_draw_anon = {"": "Closure;context_0",
   call$1: function(e) {
-    var t1, t2, t3;
-    t1 = this.context_0;
-    t2 = e.get$img();
-    t3 = $.getInterceptor$x(e);
-    return t1.drawImage(t2, t3.get$x(e), t3.get$y(e), $.get$width$x(t2), $.get$height$x(e.get$img()));
+    var t1 = $.getInterceptor$x(e);
+    return this.context_0.drawImage(e.get$img(), t1.get$x(e), t1.get$y(e));
   },
   $isFunction: true
 };
@@ -11393,6 +11393,10 @@ $$.BoundClosure$i0 = {"": "Closure;self,target,receiver",
 Isolate.$finishClasses($$, $, null);
 $$ = null;
 
+$.PlacedImage$ = function(img, x, y) {
+  return new $.PlacedImage(img, x, y);
+};
+
 $.SVGDropper$ = function() {
   return new $.SVGDropper(null, null, null, null, null, null, []);
 };
@@ -12851,7 +12855,7 @@ $.List_List$from = function(other, growable) {
   list = $.List_List($);
   for (t1 = $.get$iterator$ax(other); t1.moveNext$0() === true;)
     list.push(t1.get$current());
-  if (growable)
+  if (growable === true)
     return list;
   $length = list.length;
   fixedList = $.List_List($length);
