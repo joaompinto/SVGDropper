@@ -17,6 +17,8 @@ class SVGDropper {
   num mouseX = null, mouseY = null;
   var canvasBoundingRect = null;
   final List<PlacedImage> placed_images = []; // Placed in the drawboard
+  String selected_svg;
+  num svg_id = 0;
 
   basedir([add_path]) {
     List pieces = window.location.href.split('/');
@@ -36,10 +38,6 @@ class SVGDropper {
     // Cache it to make sure we don't trigger a reflow
     canvasBoundingRect = canvas.getBoundingClientRect();
 
-    queryAll('.toolbutton').forEach((button) =>
-        button.onClick.listen(toolbutton_OnClick));
-    var x = basedir('blue_bird.svg');
-
     HttpRequest.getString(basedir("toolbox.txt")).then(load_default_svgs);
 
     canvas.onClick.listen(canvas_OnClick);
@@ -54,29 +52,32 @@ class SVGDropper {
   }
 
   void add_svg_to_pallete(String svg) {
-    SvgElement element = new SvgElement.svg(svg);
-    String svg_width = element.attributes['width'];
-    String svg_height = element.attributes['height'];
+    SvgElement new_button = new SvgElement.svg(svg);
+    String svg_width = new_button.attributes['width'];
+    String svg_height = new_button.attributes['height'];
     // Some svgs use "pt" units which are not properly parsed
     svg_width = svg_width.replaceAll("pt", '');
     svg_height = svg_height.replaceAll("pt", '');
 
-    element.attributes['width'] = '50';
-    element.attributes['height'] = '50';
-    element.attributes['viewBox'] = '0 0 $svg_width $svg_height';
-    query("#toolbar").children.add(element);
+    new_button.attributes['width'] = '50';
+    new_button.attributes['height'] = '50';
+    new_button.attributes['viewBox'] = '0 0 $svg_width $svg_height';
+    new_button.onClick.listen(toolbutton_OnClick);
+    new_button.id = 'svg_toolbutton_${++svg_id}';
+    query("#toolbar").children.add(new_button);
   }
 
   void toolbutton_OnClick(MouseEvent event) {
+    var svg_element = new SvgElement.svg(event.currentTarget.outerHtml);
+    svg_element.attributes['width'] = '100';
+    svg_element.attributes['height'] = '100';
     active_toolbutton = new CanvasElement();
     active_toolbutton.width = 100;
     active_toolbutton.height = 100;
     var options = js.map({ 'ignoreMouse:': true,
       'ignoreAnimation': true,
-      'ignoreDimensions': true,
-      'scaleWidth': 100,
-      'scaleHeight': 100});
-    js.context.canvg(active_toolbutton, event.target.src, options);
+      'ignoreDimensions': true});
+    js.context.canvg(active_toolbutton, svg_element.outerHtml, options);
   }
 
   void canvas_OnMouseMove(MouseEvent event) {
