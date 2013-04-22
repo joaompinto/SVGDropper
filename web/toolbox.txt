@@ -1,0 +1,4 @@
+blue_bird.svg
+star.svg
+8_ball.svg
+ladybug.svg

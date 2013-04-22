@@ -1,5 +1,8 @@
 import 'dart:html';
+import 'dart:svg';
 import 'package:js/js.dart' as js;
+
+
 
 class PlacedImage {
   CanvasElement img;
@@ -12,8 +15,16 @@ class SVGDropper {
   var prev_active_toolbutton = null; // previous toolbutton
   CanvasElement canvas;
   num mouseX = null, mouseY = null;
-  Rect canvasBoundingRect = null;
+  var canvasBoundingRect = null;
   final List<PlacedImage> placed_images = []; // Placed in the drawboard
+
+  basedir([add_path]) {
+    List pieces = window.location.href.split('/');
+    pieces.removeLast();
+    if(add_path != null)
+      pieces.add(add_path);
+    return pieces.join('/');
+  }
 
   void main() {
 
@@ -25,17 +36,38 @@ class SVGDropper {
     // Cache it to make sure we don't trigger a reflow
     canvasBoundingRect = canvas.getBoundingClientRect();
 
-     queryAll('.toolbutton').forEach((button) =>
+    queryAll('.toolbutton').forEach((button) =>
         button.onClick.listen(toolbutton_OnClick));
+    var x = basedir('blue_bird.svg');
+
+    HttpRequest.getString(basedir("toolbox.txt")).then(load_default_svgs);
 
     canvas.onClick.listen(canvas_OnClick);
     canvas.onMouseMove.listen(canvas_OnMouseMove);
     canvas.onMouseOut.listen(canvas_OnMouseOut);
   }
 
+  void load_default_svgs(String svgs) {
+    for(var svg_name in svgs.split('\n')) {
+      HttpRequest.getString(basedir(svg_name)).then(add_svg_to_pallete);
+    }
+  }
+
+  void add_svg_to_pallete(String svg) {
+    SvgElement element = new SvgElement.svg(svg);
+    String svg_width = element.attributes['width'];
+    String svg_height = element.attributes['height'];
+    // Some svgs use "pt" units which are not properly parsed
+    svg_width = svg_width.replaceAll("pt", '');
+    svg_height = svg_height.replaceAll("pt", '');
+
+    element.attributes['width'] = '50';
+    element.attributes['height'] = '50';
+    element.attributes['viewBox'] = '0 0 $svg_width $svg_height';
+    query("#toolbar").children.add(element);
+  }
+
   void toolbutton_OnClick(MouseEvent event) {
-    //active_toolbutton = query("#${event.target.id}").clone(true);
-    //print('${event.target.href}');
     active_toolbutton = new CanvasElement();
     active_toolbutton.width = 100;
     active_toolbutton.height = 100;
@@ -45,8 +77,6 @@ class SVGDropper {
       'scaleWidth': 100,
       'scaleHeight': 100});
     js.context.canvg(active_toolbutton, event.target.src, options);
-
-    //active_toolbutton
   }
 
   void canvas_OnMouseMove(MouseEvent event) {
