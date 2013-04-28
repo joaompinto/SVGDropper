@@ -53,14 +53,19 @@ class SVGDropper {
 
   void add_svg_to_pallete(String svg) {
     SvgElement new_button = new SvgElement.svg(svg);
+
     String svg_width = new_button.attributes['width'];
     String svg_height = new_button.attributes['height'];
+
     // Some svgs use "pt" units which are not properly parsed
     svg_width = svg_width.replaceAll("pt", '');
     svg_height = svg_height.replaceAll("pt", '');
 
-    new_button.attributes['width'] = '50';
-    new_button.attributes['height'] = '50';
+    num width = 50;
+    num height = 50;
+
+    new_button.attributes['width'] = '$height';
+    new_button.attributes['height'] = '$width';
     new_button.attributes['viewBox'] = '0 0 $svg_width $svg_height';
     new_button.onClick.listen(toolbutton_OnClick);
     new_button.id = 'svg_toolbutton_${++svg_id}';
@@ -69,11 +74,24 @@ class SVGDropper {
 
   void toolbutton_OnClick(MouseEvent event) {
     var svg_element = new SvgElement.svg(event.currentTarget.outerHtml);
-    svg_element.attributes['width'] = '100';
-    svg_element.attributes['height'] = '100';
+    var viewbox = svg_element.attributes['viewBox'];
+    num width, height;
+    num view_height = double.parse(viewbox.split(" ")[2]);
+    num view_width = double.parse(viewbox.split(" ")[3]);
+    num ratio = view_height/view_width;
+    // Keep aspect ratio
+    if(view_width > view_height) {
+      width = 100;
+      height = (width/ratio).floor();
+    } else {
+      height = 100;
+      width = (height*ratio).floor();
+    }
+    svg_element.attributes['width'] = '$width';
+    svg_element.attributes['height'] = '$height';
     active_toolbutton = new CanvasElement();
-    active_toolbutton.width = 100;
-    active_toolbutton.height = 100;
+    active_toolbutton.width = width;
+    active_toolbutton.height = height;
     var options = js.map({ 'ignoreMouse:': true,
       'ignoreAnimation': true,
       'ignoreDimensions': true});
