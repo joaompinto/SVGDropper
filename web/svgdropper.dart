@@ -43,6 +43,7 @@ class SVGDropper {
     canvas.onClick.listen(canvas_OnClick);
     canvas.onMouseMove.listen(canvas_OnMouseMove);
     canvas.onMouseOut.listen(canvas_OnMouseOut);
+    canvas.onMouseWheel.listen(canvas_OnMouseWheel);
   }
 
   void load_default_svgs(String svgs) {
@@ -73,7 +74,8 @@ class SVGDropper {
   }
 
   void toolbutton_OnClick(MouseEvent event) {
-    var svg_element = new SvgElement.svg(event.currentTarget.outerHtml);
+    SvgElement currentTarget = event.currentTarget;
+    SvgElement svg_element = currentTarget.clone(true);
     var viewbox = svg_element.attributes['viewBox'];
     num width, height;
     num view_height = double.parse(viewbox.split(" ")[2]);
@@ -120,6 +122,33 @@ class SVGDropper {
       prev_active_toolbutton = active_toolbutton;
       window.requestAnimationFrame(draw);
     }
+  }
+
+  void canvas_OnMouseWheel(WheelEvent event)  {
+    int change;
+    int delta = event.deltaY;
+    if(active_toolbutton == null)
+      return;
+    if(delta > 0)
+      change = 1;
+    else
+       change = -1;
+    print("$active_toolbutton");
+    var viewbox = active_toolbutton.attributes['viewBox'];
+    num width, height;
+    num view_height = double.parse(viewbox.split(" ")[2]);
+    num view_width = double.parse(viewbox.split(" ")[3]);
+    num ratio = view_height/view_width;
+    // Keep aspect ratio
+    if(view_width > view_height) {
+      width = view_width + change;
+      height = (width/ratio).floor();
+    } else {
+      height = view_height + change;
+      width = (height*ratio).floor();
+    }
+    active_toolbutton.attributes['width'] = '$width';
+    active_toolbutton.attributes['height'] = '$height';
   }
 
   void draw(num _) {
