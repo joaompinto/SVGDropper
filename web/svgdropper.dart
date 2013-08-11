@@ -2,8 +2,6 @@ import 'dart:html';
 import 'dart:svg';
 import 'package:js/js.dart' as js;
 
-
-
 class PlacedImage {
   CanvasElement img;
   num x, y;
